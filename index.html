@@ -3,26 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>website</title>
+  <title>Henry 的主页</title>
   <link rel="stylesheet" href="style.css">
+  <!-- 内联执行：恢复主题，避免深色模式首屏白闪 -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var dark = saved
+          ? saved === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) { /* 存储不可用时忽略 */ }
+    })();
+  </script>
 </head>
 <body>
   <header>
-    <h1>测试1</h1>
-    <p>测试1</p>
-    <button id="themeBtn">测试1</button>
+    <h1>Henrybeta</h1>
+    <p>测试中</p>
+    <button id="themeBtn" type="button">切换深色</button>
   </header>
+
   <main>
     <section>
-      <h2>测试1</h2>
-      <p>测试2</p>
+      <h2>关于</h2>
+      <p>这里什么也没有qaq</p>
+    </section>
+    <section>
+      <h2>一些内容</h2>
+      <p><a href="blog.html">To →</a></p>
     </section>
 
     <section>
-      <h2>about</h2>
+      <h2>联系方式</h2>
       <ul>
-        <li>qq:1816846739</li>
-        <li>Email: 1816846739@qq.com</li>
+        <li>QQ：1816846739</li>
+        <li>Email：<a href="mailto:1816846739@qq.com">1816846739@qq.com</a></li>
       </ul>
     </section>
   </main>

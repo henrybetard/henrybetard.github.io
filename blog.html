@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>博客 · Henry</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var dark = saved
+          ? saved === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <h1><a href="index.html">Henry</a></h1>
+    <p>写点东西</p>
+    <button id="themeBtn" type="button">切换深色</button>
+  </header>
+
+  <main>
+    <section>
+      <h2>全部文章</h2>
+      <ul id="postList" class="post-list"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> Henry</p>
+  </footer>
+
+  <script src="posts.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
