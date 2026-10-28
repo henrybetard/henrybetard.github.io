@@ -7,7 +7,11 @@
   --btn-bg: #2563eb;
   --btn-text: #ffffff;
   --border: rgba(0, 0, 0, 0.12);
-  color-scheme: light;          /* 让原生控件、滚动条跟随主题 */
+  color-scheme: light;              /* 让原生控件、滚动条跟随主题 */
+
+  --bg-image: url("background.webp");       /* 背景图 */
+  --overlay: rgba(255, 255, 255, 0.82);     /* 浅色遮罩 */
+  --card-alpha: rgba(255, 255, 255, 0.75);  /* 卡片半透明 */
 }
 
 /* 深色主题：给 <html> 加 dark 类时生效 */
@@ -17,9 +21,12 @@ html.dark {
   --card: #1e1e1e;
   --accent: #60a5fa;
   --btn-bg: #60a5fa;
-  --btn-text: #0b1220;          /* 亮底深字，保证对比度 */
+  --btn-text: #0b1220;              /* 亮底深字，保证对比度 */
   --border: rgba(255, 255, 255, 0.15);
   color-scheme: dark;
+
+  --overlay: rgba(0, 0, 0, 0.72);
+  --card-alpha: rgba(30, 30, 30, 0.7);
 }
 
 /* ===== 2. 基础重置 ===== */
@@ -32,10 +39,34 @@ html.dark {
 body {
   font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC",
     "Microsoft YaHei", sans-serif;
-  background: var(--bg);
   color: var(--text);
   line-height: 1.6;
-  transition: background 0.3s, color 0.3s;
+
+  background-color: var(--bg);
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  min-height: 100vh;
+  min-height: 100dvh;   /* iOS 地址栏收起/展开时不溢出 */
+
+  position: relative;
+  isolation: isolate;   /* 让遮罩落在背景之上、内容之下 */
+
+  transition: color 0.3s;
+}
+
+/* 遮罩单独放在伪元素上：切主题时能平滑过渡颜色 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--overlay);
+  transition: background-color 0.3s;
+  pointer-events: none;
 }
 
 a { color: var(--accent); }
@@ -63,10 +94,13 @@ main {
 }
 
 section {
-  background: var(--card);
+  background: var(--card-alpha);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);   /* Safari 需要前缀 */
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 20px;
+  border: 1px solid var(--border);
 }
 
 section h2 {
@@ -146,7 +180,7 @@ header p a:hover,
 }
 
 .tag {
-  background: var(--bg);
+  background: transparent;      /* 深色下不再出现暗块 */
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 1px 10px;
@@ -158,6 +192,15 @@ header p a:hover,
   margin-top: 4px;
 }
 
+.post-body {
+  background: var(--card-alpha);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
 .post-body h2 {
   margin-bottom: 12px;
   font-size: 1.5rem;
@@ -166,13 +209,14 @@ header p a:hover,
 .post-content { margin-top: 20px; }
 .post-content p { margin: 12px 0; }
 .post-content ul { margin: 12px 0; }
+
 .post-content h3 {
   margin: 20px 0 8px;
   color: var(--accent);
 }
 
 .post-content pre {
-  background: var(--bg);
+  background: var(--card);      /* 用卡片色，和毛玻璃卡片协调 */
   border: 1px solid var(--border);
   padding: 14px;
   border-radius: 8px;
