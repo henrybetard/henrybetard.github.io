@@ -1,5 +1,6 @@
 (function () {
   const KEY = 'checkin_records';
+  const EXCHANGE_KEY = 'checkin_exchange';
 
   const FORTUNES = [
     { name: '大吉', prob: 0.001, cls: 'fortune-big',   desc: '鸿运当头，今天做什么都顺' },
@@ -34,6 +35,13 @@
   const autoBtn = document.getElementById('autoBtn');
   const autoFreqEl = document.getElementById('autoFreq');
   const autoHintEl = document.getElementById('autoHint');
+  const autoStopOnBigEl = document.getElementById('autoStopOnBig');
+  // ==== 兑换 ====
+  const exchangeButtons = document.querySelectorAll('.exchange-btn');
+  const exchangeHintEl = document.getElementById('exchangeHint');
+  const exchangeModal = document.getElementById('exchangeModal');
+  const exchangeMsgEl = document.getElementById('exchangeMsg');
+  const exchangeCloseBtn = document.getElementById('exchangeClose');
 
   if (!checkinBtn) return;
 
@@ -58,9 +66,30 @@
   }
 
   function saveRecords(records) {
+    try { localStorage.setItem(KEY, JSON.stringify(records)); } catch (e) {}
+  }
+
+  // ==== 兑换存储 ====
+  function loadExchanges() {
+    const def = { '大吉': 0, '中吉': 0, '小吉': 0, '中平': 0 };
     try {
-      localStorage.setItem(KEY, JSON.stringify(records));
-    } catch (e) {}
+      const raw = localStorage.getItem(EXCHANGE_KEY);
+      if (!raw) return def;
+      const data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') return def;
+      return {
+        '大吉': Number(data['大吉']) || 0,
+        '中吉': Number(data['中吉']) || 0,
+        '小吉': Number(data['小吉']) || 0,
+        '中平': Number(data['中平']) || 0
+      };
+    } catch (e) {
+      return def;
+    }
+  }
+
+  function saveExchanges() {
+    try { localStorage.setItem(EXCHANGE_KEY, JSON.stringify(exchanges)); } catch (e) {}
   }
 
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -68,6 +97,7 @@
   function fmtTime(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); }
 
   let records = loadRecords();
+  let exchanges = loadExchanges();
 
   // ---------- 运势 ----------
   function drawFortune() {
@@ -105,8 +135,49 @@
     });
   }
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') hideFortune();
+    if (e.key === 'Escape') {
+      hideFortune();
+      hideExchangeModal();
+    }
   });
+
+  // ==== 兑换弹窗 ====
+    function showExchangeModal(data) {
+    if (!exchangeModal || !exchangeMsgEl) return;
+
+    const toCls = FORTUNE_CLASS[data.to] || '';
+    const fromCls = FORTUNE_CLASS[data.from] || '';
+
+    // 标题按"获得"的运势变色
+    const titleEl = exchangeModal.querySelector('.exchange-title');
+    if (titleEl) {
+      titleEl.className = 'exchange-title ' + toCls;
+    }
+
+    // 消息里两个运势名各自带颜色
+    exchangeMsgEl.innerHTML =
+      '获得 <span class="fortune-tag ' + toCls + '">' + data.to + '</span> × ' + data.gain +
+      '，消耗 <span class="fortune-tag ' + fromCls + '">' + data.from + '</span> × ' + data.cost;
+
+    exchangeModal.classList.add('show');
+    const box = exchangeModal.querySelector('.fortune-box');
+    if (box) {
+      box.classList.remove('pop');
+      void box.offsetWidth;
+      box.classList.add('pop');
+    }
+  }
+
+  function hideExchangeModal() {
+    if (exchangeModal) exchangeModal.classList.remove('show');
+  }
+
+  if (exchangeCloseBtn) exchangeCloseBtn.addEventListener('click', hideExchangeModal);
+  if (exchangeModal) {
+    exchangeModal.addEventListener('click', function (e) {
+      if (e.target === exchangeModal) hideExchangeModal();
+    });
+  }
 
   // ---------- 统计 ----------
   function computeStats() {
@@ -127,6 +198,7 @@
     return { todayCount: todayArr.length, total: total, streak: streak };
   }
 
+  // 打卡抽到的原始数量
   function computeFortuneStats() {
     const s = { '大吉': 0, '中吉': 0, '小吉': 0, '中平': 0 };
     Object.keys(records).forEach(function (k) {
@@ -135,6 +207,17 @@
       });
     });
     return s;
+  }
+
+  // ==== 可用数量 = 抽到的 + 兑换净变化 ====
+  function availableFortunes() {
+    const raw = computeFortuneStats();
+    return {
+      '大吉': raw['大吉'] + exchanges['大吉'],
+      '中吉': raw['中吉'] + exchanges['中吉'],
+      '小吉': raw['小吉'] + exchanges['小吉'],
+      '中平': raw['中平'] + exchanges['中平']
+    };
   }
 
   // ---------- 渲染 ----------
@@ -147,7 +230,7 @@
     if (s.todayCount === 0) hintEl.textContent = '今天还没打卡，点一下试试';
     else hintEl.textContent = '今天已打卡 ' + s.todayCount + ' 次，继续保持';
 
-    const fs = computeFortuneStats();
+    const fs = availableFortunes();
     if (fBigEl) fBigEl.textContent = fs['大吉'];
     if (fMidEl) fMidEl.textContent = fs['中吉'];
     if (fSmallEl) fSmallEl.textContent = fs['小吉'];
@@ -211,8 +294,8 @@
     calendarEl.innerHTML = cells.join('');
   }
 
-  // ---------- 核心打卡（手动 / 自动共用） ----------
-  let autoStats = null; // { count, fortunes: {大吉:0,...} }
+  // ---------- 核心打卡 ----------
+  let autoStats = null;
 
   function doCheckin(silent) {
     const now = new Date();
@@ -238,6 +321,23 @@
     } else if (autoStats) {
       autoStats.count++;
       if (fortune) autoStats.fortunes[fortune.name]++;
+
+      // 勾选了"遇到大吉自动停下"且本次抽到大吉
+      if (
+        fortune &&
+        fortune.name === '大吉' &&
+        autoStopOnBigEl &&
+        autoStopOnBigEl.checked
+      ) {
+        stopAuto();
+        if (autoHintEl) {
+          autoHintEl.textContent += '（遇到大吉，自动打卡已停止）';
+        }
+        showFortune(fortune);
+        if (fortuneDescEl) {
+          fortuneDescEl.textContent = fortune.desc + ' · 自动打卡已停止';
+        }
+      }
     }
   }
 
@@ -260,16 +360,11 @@
     autoFreqEl.disabled = true;
     autoHintEl.textContent = '自动打卡中…（' + freq + ' 次/秒，不弹窗）';
 
-    autoTimer = setInterval(function () {
-      doCheckin(true);
-    }, interval);
+    autoTimer = setInterval(function () { doCheckin(true); }, interval);
   }
 
   function stopAuto() {
-    if (autoTimer) {
-      clearInterval(autoTimer);
-      autoTimer = null;
-    }
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
     autoBtn.textContent = '开始自动打卡';
     autoBtn.classList.remove('auto-on');
     autoFreqEl.disabled = false;
@@ -289,14 +384,39 @@
 
   if (autoBtn) {
     autoBtn.addEventListener('click', function () {
-      if (autoTimer) stopAuto();
-      else startAuto();
+      if (autoTimer) stopAuto(); else startAuto();
     });
   }
 
-  // 离开页面时清理定时器，避免后台继续跑
   window.addEventListener('beforeunload', function () {
     if (autoTimer) clearInterval(autoTimer);
+  });
+
+  // ==== 兑换事件 ====
+  exchangeButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const from = btn.dataset.from;
+      const to = btn.dataset.to;
+      const cost = Number(btn.dataset.cost);
+      const gain = Number(btn.dataset.gain);
+
+      const avail = availableFortunes();
+      if (avail[from] < cost) {
+        if (exchangeHintEl) {
+          exchangeHintEl.textContent =
+            '「' + from + '」不足：需要 ' + cost + ' 个，当前 ' + avail[from] + ' 个';
+        }
+        return;
+      }
+
+      exchanges[from] -= cost;
+      exchanges[to] += gain;
+      saveExchanges();
+      render();
+
+      if (exchangeHintEl) exchangeHintEl.textContent = '';
+      showExchangeModal({ from: from, to: to, cost: cost, gain: gain });
+    });
   });
 
   render();

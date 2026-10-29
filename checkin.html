@@ -46,7 +46,7 @@
       <button id="checkinBtn" class="checkin-btn" type="button">打卡</button>
       <p class="checkin-hint" id="checkinHint">今天还没打卡，点一下试试</p>
     </section>
-        <section>
+           <section>
       <h2>自动打卡</h2>
       <div class="auto-controls">
         <label>
@@ -66,6 +66,10 @@
         </label>
         <button id="autoBtn" type="button">开始自动打卡</button>
       </div>
+      <label class="auto-option">
+        <input type="checkbox" id="autoStopOnBig" />
+        遇到大吉自动停下并弹窗
+      </label>
       <p class="checkin-hint" id="autoHint">自动打卡期间不弹窗，停止后汇总本次结果</p>
     </section>
     <section>
@@ -85,14 +89,40 @@
       <button type="button" id="fortuneClose">收下</button>
     </div>
   </div>
-  <section>
-      <h2>运势记录</h2>
+  <div id="exchangeModal" class="fortune-modal">
+    <div class="fortune-box">
+      <div class="exchange-title">兑换成功</div>
+      <div class="exchange-msg" id="exchangeMsg"></div>
+      <button type="button" id="exchangeClose">好的</button>
+    </div>
+  </div>
+      <section>
+      <h2>运势（可用）</h2>
       <div class="fortune-stats">
         <div class="stat"><span class="stat-value fortune-big" id="fBig">0</span><span class="stat-label">大吉</span></div>
         <div class="stat"><span class="stat-value fortune-mid" id="fMid">0</span><span class="stat-label">中吉</span></div>
         <div class="stat"><span class="stat-value fortune-small" id="fSmall">0</span><span class="stat-label">小吉</span></div>
         <div class="stat"><span class="stat-value fortune-flat" id="fFlat">0</span><span class="stat-label">中平</span></div>
       </div>
+      
+    </section>
+    <section>-
+      <h2>兑换</h2>
+      <div class="exchange-list">
+        <button class="exchange-btn" type="button"
+                data-from="中平" data-to="小吉" data-cost="10" data-gain="1">
+          10 中平 → 1 小吉
+        </button>
+        <button class="exchange-btn" type="button"
+                data-from="小吉" data-to="中吉" data-cost="10" data-gain="1">
+          10 小吉 → 1 中吉
+        </button>
+        <button class="exchange-btn" type="button"
+                data-from="中吉" data-to="大吉" data-cost="100" data-gain="1">
+          100 中吉 → 1 大吉
+        </button>
+      </div>
+      <p class="checkin-hint" id="exchangeHint"></p>
     </section>
   <footer>
     <p>© <span id="year"></span> Henrybeta</p>

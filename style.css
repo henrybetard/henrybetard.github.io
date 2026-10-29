@@ -505,3 +505,86 @@ html.dark #autoBtn.auto-on {
     flex-direction: column;
   }
 }
+/* ===== 兑换 ===== */
+/* ===== 兑换 ===== */
+.exchange-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.exchange-btn {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+  text-align: center;
+}
+
+.exchange-btn:hover {
+  background: var(--card);
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.exchange-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+
+/* 标题按获得的运势上色（组合选择器，优先级高于 .exchange-title 单独那条） */
+.exchange-title.fortune-big   { color: #d4a017; }
+.exchange-title.fortune-mid   { color: #e2572b; }
+.exchange-title.fortune-small { color: #2b7de2; }
+.exchange-title.fortune-flat  { color: #2e9e63; }
+
+html.dark .exchange-title.fortune-big   { color: #f5c518; }
+html.dark .exchange-title.fortune-mid   { color: #ff7a4d; }
+html.dark .exchange-title.fortune-small { color: #5aa4ff; }
+html.dark .exchange-title.fortune-flat  { color: #52c88c; }
+
+.exchange-msg {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  opacity: 0.85;
+  line-height: 1.7;
+}
+
+/* 消息里的运势标签：去掉左外边距，避免和前后文字空隙过大 */
+.exchange-msg .fortune-tag {
+  margin-left: 0;
+  font-size: 0.85rem;
+  vertical-align: 1px;
+}
+/* ===== 自动打卡选项 ===== */
+.auto-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin: 4px 0 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.auto-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+.auto-option:hover {
+  opacity: 1;
+}
