@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打卡 · Henrybeta</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var dark = saved
+          ? saved === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <h1><a href="index.html">Henrybeta</a></h1>
+    <p><a href="index.html">← 返回首页</a></p>
+    <button id="themeBtn" type="button">切换深色</button>
+  </header>
+
+  <main>
+    <section class="checkin-card">
+      <h2>每日打卡</h2>
+
+      <div class="checkin-stats">
+        <div class="stat">
+          <span class="stat-value" id="todayCount">0</span>
+          <span class="stat-label">今日打卡</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="streak">0</span>
+          <span class="stat-label">连续天数</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="totalCount">0</span>
+          <span class="stat-label">总打卡</span>
+        </div>
+      </div>
+
+      <button id="checkinBtn" class="checkin-btn" type="button">打卡</button>
+      <p class="checkin-hint" id="checkinHint">今天还没打卡，点一下试试</p>
+    </section>
+        <section>
+      <h2>自动打卡</h2>
+      <div class="auto-controls">
+        <label>
+          频率
+          <select id="autoFreq">
+            <option value="1">1 次/秒</option>
+            <option value="2">2 次/秒</option>
+            <option value="3">3 次/秒</option>
+            <option value="4">4 次/秒</option>
+            <option value="5" selected>5 次/秒</option>
+            <option value="6">6 次/秒</option>
+            <option value="7">7 次/秒</option>
+            <option value="8">8 次/秒</option>
+            <option value="9">9 次/秒</option>
+            <option value="10">10 次/秒</option>
+          </select>
+        </label>
+        <button id="autoBtn" type="button">开始自动打卡</button>
+      </div>
+      <p class="checkin-hint" id="autoHint">自动打卡期间不弹窗，停止后汇总本次结果</p>
+    </section>
+    <section>
+      <h2>最近打卡</h2>
+      <ul id="recentList" class="recent-list"></ul>
+    </section>
+
+    <section>
+      <h2>近 30 天</h2>
+      <div id="calendar" class="calendar"></div>
+    </section>
+  </main>
+      <div id="fortuneModal" class="fortune-modal">
+    <div class="fortune-box">
+      <div class="fortune-name" id="fortuneName"></div>
+      <div class="fortune-desc" id="fortuneDesc"></div>
+      <button type="button" id="fortuneClose">收下</button>
+    </div>
+  </div>
+  <section>
+      <h2>运势记录</h2>
+      <div class="fortune-stats">
+        <div class="stat"><span class="stat-value fortune-big" id="fBig">0</span><span class="stat-label">大吉</span></div>
+        <div class="stat"><span class="stat-value fortune-mid" id="fMid">0</span><span class="stat-label">中吉</span></div>
+        <div class="stat"><span class="stat-value fortune-small" id="fSmall">0</span><span class="stat-label">小吉</span></div>
+        <div class="stat"><span class="stat-value fortune-flat" id="fFlat">0</span><span class="stat-label">中平</span></div>
+      </div>
+    </section>
+  <footer>
+    <p>© <span id="year"></span> Henrybeta</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="checkin.js"></script>
+</body>
+</html>

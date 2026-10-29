@@ -10,7 +10,7 @@
   color-scheme: light;              /* 让原生控件、滚动条跟随主题 */
 
   --bg-image: url("background.webp");       /* 背景图 */
-  --overlay: rgba(255, 255, 255, 0.82);     /* 浅色遮罩 */
+  --overlay: rgba(255, 255, 255, 0.35);     /* 浅色遮罩 */
 }
 
 /* 深色主题：给 <html> 加 dark 类时生效 */
@@ -24,7 +24,7 @@ html.dark {
   --border: rgba(255, 255, 255, 0.15);
   color-scheme: dark;
 
-  --overlay: rgba(0, 0, 0, 0.72);
+  --overlay: rgba(0, 0, 0, 0.50);
 }
 
 /* ===== 2. 基础重置 ===== */
@@ -229,4 +229,279 @@ header p a:hover,
   header h1 { font-size: 1.5rem; }
   main { padding: 0 16px 32px; }
   section { padding: 18px; }
+}
+/* ===== 打卡 ===== */
+.checkin-card {
+  text-align: center;
+}
+
+.checkin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.stat {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 8px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.stat-value.bump {
+  animation: bump 0.4s ease;
+}
+
+@keyframes bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.checkin-btn {
+  padding: 14px 48px;
+  font-size: 1.1rem;
+  border-radius: 999px;
+  margin: 8px 0 12px;
+}
+
+.checkin-btn.pop {
+  animation: pop 0.35s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.checkin-hint {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.recent-list {
+  list-style: none;
+  padding: 0;
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.recent-item:last-child {
+  border-bottom: none;
+}
+
+.recent-empty {
+  opacity: 0.6;
+  font-size: 0.9rem;
+}
+
+.recent-time {
+  font-family: ui-monospace, Consolas, Menlo, monospace;
+  opacity: 0.75;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.cal-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  background: var(--bg);
+}
+
+.cal-cell.level-0 { opacity: 0.45; }
+
+.cal-cell.level-1 {
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg));
+}
+
+.cal-cell.level-2 {
+  background: color-mix(in srgb, var(--accent) 42%, var(--bg));
+}
+
+.cal-cell.level-3 {
+  background: color-mix(in srgb, var(--accent) 65%, var(--bg));
+}
+
+.cal-cell.level-4 {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cal-day {
+  font-weight: 600;
+}
+
+.cal-count {
+  font-size: 0.62rem;
+  opacity: 0.85;
+}
+/* ===== 运势 ===== */
+.fortune-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.fortune-tag {
+  font-size: 0.72rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  margin-left: 8px;
+}
+
+.fortune-big   { color: #d4a017; border-color: #d4a017; }
+.fortune-mid   { color: #e2572b; border-color: #e2572b; }
+.fortune-small { color: #2b7de2; border-color: #2b7de2; }
+.fortune-flat  { color: #2e9e63; border-color: #2e9e63; }
+
+html.dark .fortune-big   { color: #f5c518; border-color: #f5c518; }
+html.dark .fortune-mid   { color: #ff7a4d; border-color: #ff7a4d; }
+html.dark .fortune-small { color: #5aa4ff; border-color: #5aa4ff; }
+html.dark .fortune-flat  { color: #52c88c; border-color: #52c88c; }
+
+/* 弹窗 */
+.fortune-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.fortune-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.fortune-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 40px;
+  text-align: center;
+  min-width: 240px;
+  transform: scale(0.9);
+  transition: transform 0.25s ease;
+}
+
+.fortune-modal.show .fortune-box {
+  transform: scale(1);
+}
+
+.fortune-box.pop {
+  animation: fortune-pop 0.4s ease;
+}
+
+@keyframes fortune-pop {
+  0%   { transform: scale(0.85); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.fortune-name {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+}
+
+.fortune-desc {
+  font-size: 0.95rem;
+  opacity: 0.75;
+  margin-bottom: 20px;
+}
+
+.fortune-box button {
+  padding: 8px 28px;
+  border-radius: 999px;
+}
+
+@media (max-width: 600px) {
+  .fortune-stats { grid-template-columns: repeat(2, 1fr); }
+}
+.auto-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0 8px;
+}
+
+.auto-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.auto-controls select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.auto-controls select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#autoBtn.auto-on {
+  background: #e2572b;
+  color: #fff;
+}
+
+html.dark #autoBtn.auto-on {
+  background: #ff7a4d;
+  color: #1a1a1a;
+}
+
+@media (max-width: 600px) {
+  .auto-controls {
+    flex-direction: column;
+  }
 }
