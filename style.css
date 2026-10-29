@@ -11,7 +11,6 @@
 
   --bg-image: url("background.webp");       /* 背景图 */
   --overlay: rgba(255, 255, 255, 0.82);     /* 浅色遮罩 */
-  --card-alpha: rgba(255, 255, 255, 0.75);  /* 卡片半透明 */
 }
 
 /* 深色主题：给 <html> 加 dark 类时生效 */
@@ -26,7 +25,6 @@ html.dark {
   color-scheme: dark;
 
   --overlay: rgba(0, 0, 0, 0.72);
-  --card-alpha: rgba(30, 30, 30, 0.7);
 }
 
 /* ===== 2. 基础重置 ===== */
@@ -94,9 +92,7 @@ main {
 }
 
 section {
-  background: var(--card-alpha);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);   /* Safari 需要前缀 */
+  background: var(--card);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 20px;
@@ -193,9 +189,7 @@ header p a:hover,
 }
 
 .post-body {
-  background: var(--card-alpha);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 24px;
@@ -216,7 +210,7 @@ header p a:hover,
 }
 
 .post-content pre {
-  background: var(--card);      /* 用卡片色，和毛玻璃卡片协调 */
+  background: var(--bg);
   border: 1px solid var(--border);
   padding: 14px;
   border-radius: 8px;
