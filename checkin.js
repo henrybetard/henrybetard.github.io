@@ -3,10 +3,10 @@
   const EXCHANGE_KEY = 'checkin_exchange';
 
   const FORTUNES = [
-    { name: '大吉', prob: 0.001, cls: 'fortune-big',   desc: '鸿运当头，今天做什么都顺' },
-    { name: '中吉', prob: 0.01,  cls: 'fortune-mid',   desc: '好运将至，稳中求进' },
-    { name: '小吉', prob: 0.05,  cls: 'fortune-small', desc: '小有收获，心情不错' },
-    { name: '中平', prob: 0.10,  cls: 'fortune-flat',  desc: '平平稳稳，按部就班' }
+    { name: '大吉', prob: 0.0001, cls: 'fortune-big',   desc: '鸿运当头，今天做什么都顺' },
+    { name: '中吉', prob: 0.009,  cls: 'fortune-mid',   desc: '好运将至，稳中求进' },
+    { name: '小吉', prob: 0.09,  cls: 'fortune-small', desc: '小有收获，心情不错' },
+    { name: '中平', prob: 0.9,  cls: 'fortune-flat',  desc: '平平稳稳，按部就班' }
   ];
 
   const FORTUNE_CLASS = {
