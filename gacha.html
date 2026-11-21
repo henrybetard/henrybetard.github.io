@@ -63,7 +63,7 @@
         </button>
         <button class="gacha-btn gacha-btn-pack" type="button" id="drawPack">
           <span class="gacha-btn-title">卡包</span>
-          <span class="gacha-btn-cost">中吉 × 1 · 5 张 · 必出特殊</span>
+          <span class="gacha-btn-cost">中吉 × 1 · 5 张</span>
         </button>
         <button class="gacha-btn gacha-btn-elite" type="button" id="drawElite">
           <span class="gacha-btn-title">精英征召</span>
@@ -86,9 +86,10 @@
 
     <section>
       <h2>卡册</h2>
-      <p class="checkin-hint" id="collectionHint">未获得的卡显示为灰暗状态。</p>
-      <p class="checkin-hint">数据与卡面来自 <a href="https://wiki.biligame.com/kards" target="_blank" rel="noopener noreferrer">KARDS WIKI（biligame）</a>，仅收录该 wiki 收录的卡。</p>
+      <p class="checkin-hint" id="collectionHint">未获得的卡默认隐藏，可勾选下方开关查看。</p>
+      <label class="kards-filter"><input type="checkbox" id="showLocked"> 显示未获得的卡</label>
       <div class="kards-grid" id="collection"></div>
+      <p class="checkin-hint">数据与卡面来自 <a href="https://wiki.biligame.com/kards" target="_blank" rel="noopener noreferrer">KARDS WIKI（biligame）</a>，仅收录该 wiki 收录的卡。</p>
     </section>
 
     <section>

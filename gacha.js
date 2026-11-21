@@ -107,6 +107,7 @@
   var resultClose = document.getElementById('resultClose');
   var collectionEl = document.getElementById('collection');
   var collectionHint = document.getElementById('collectionHint');
+  var showLockedEl = document.getElementById('showLocked');
   var historyEl = document.getElementById('history');
   var drawOneBtn = document.getElementById('drawOne');
   var drawFiveBtn = document.getElementById('drawFive');
@@ -335,14 +336,25 @@
 
   function renderCollection() {
     if (!collectionEl) return;
-    var owned = CARDS.filter(function (c) { return (collection[c.id] || 0) > 0; }).length;
-    collectionEl.innerHTML = CARDS.map(function (c) {
-      return cardHtml(c, { owned: (collection[c.id] || 0) > 0, count: collection[c.id] || 0 });
-    }).join('');
+    var ownedCount = CARDS.filter(function (c) { return (collection[c.id] || 0) > 0; }).length;
+    var showAll = !!(showLockedEl && showLockedEl.checked);
+    var list = CARDS.filter(function (c) {
+      return showAll || (collection[c.id] || 0) > 0;
+    });
+
+    if (!list.length) {
+      collectionEl.innerHTML = '<p class="recent-empty">还没有获得任何卡，先开一包吧。</p>';
+    } else {
+      collectionEl.innerHTML = list.map(function (c) {
+        var count = collection[c.id] || 0;
+        return cardHtml(c, { owned: count > 0, count: count });
+      }).join('');
+    }
+
     if (collectionHint) {
-      collectionHint.textContent = owned === CARDS.length
-        ? '全部集齐了，恭喜！'
-        : '已集齐 ' + owned + ' / ' + CARDS.length + '，未获得的卡显示为灰暗状态。';
+      if (ownedCount === CARDS.length) collectionHint.textContent = '全部集齐了，恭喜！';
+      else if (showAll) collectionHint.textContent = '已集齐 ' + ownedCount + ' / ' + CARDS.length + '（正在显示全部卡）。';
+      else collectionHint.textContent = '已集齐 ' + ownedCount + ' / ' + CARDS.length + '，未获得的卡默认隐藏。';
     }
   }
 
@@ -496,6 +508,7 @@
   if (drawPackBtn) drawPackBtn.addEventListener('click', function () { runDraw('pack'); });
   if (drawEliteBtn) drawEliteBtn.addEventListener('click', function () { runDraw('elite'); });
   if (flipAllBtn) flipAllBtn.addEventListener('click', flipAll);
+  if (showLockedEl) showLockedEl.addEventListener('change', function () { renderCollection(); });
 
   if (resultClose) {
     resultClose.addEventListener('click', function () {
