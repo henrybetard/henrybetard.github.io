@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KARDS 抽卡 · Henrybeta</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var dark = saved
+          ? saved === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <h1><a href="index.html">Henrybeta</a></h1>
+    <p><a href="index.html">← 返回首页</a> · <a href="checkin.html">去打卡攒运势</a></p>
+    <button id="themeBtn" type="button">切换深色</button>
+  </header>
+
+  <main>
+    <section class="gacha-panel">
+      <h2>补给开包</h2>
+
+      <div class="checkin-stats gacha-stats">
+        <div class="stat">
+          <span class="stat-value fortune-flat" id="gFlat">0</span>
+          <span class="stat-label">中平</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value fortune-small" id="gSmall">0</span>
+          <span class="stat-label">小吉</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value fortune-mid" id="gMid">0</span>
+          <span class="stat-label">中吉</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value fortune-big" id="gBig">0</span>
+          <span class="stat-label">大吉</span>
+        </div>
+      </div>
+
+      <p class="gacha-line">
+        已收集 <strong id="collected">0</strong> / <span id="totalCards">0</span>
+        · 保底进度 <strong id="pityCount">0</strong> / <span id="pityLimit">20</span>
+      </p>
+
+      <div class="gacha-actions">
+        <button class="gacha-btn" type="button" id="drawOne">
+          <span class="gacha-btn-title">单抽</span>
+          <span class="gacha-btn-cost">中平 × 10</span>
+        </button>
+        <button class="gacha-btn" type="button" id="drawFive">
+          <span class="gacha-btn-title">五连</span>
+          <span class="gacha-btn-cost">中平 × 40</span>
+        </button>
+        <button class="gacha-btn gacha-btn-pack" type="button" id="drawPack">
+          <span class="gacha-btn-title">卡包</span>
+          <span class="gacha-btn-cost">中吉 × 1 · 5 张 · 必出特殊</span>
+        </button>
+        <button class="gacha-btn gacha-btn-elite" type="button" id="drawElite">
+          <span class="gacha-btn-title">精英征召</span>
+          <span class="gacha-btn-cost">大吉 × 1 · 必出精英</span>
+        </button>
+      </div>
+
+      <p class="gacha-rate">概率：标准 70% · 限定 20% · 特殊 9% · 精英 1%；卡包不出标准，必出特殊以上。</p>
+      <p class="checkin-hint" id="gachaHint" aria-live="polite">点一下开包，限定以上会有专属边框。</p>
+    </section>
+
+    <section class="gacha-result" id="resultSection" aria-live="polite" hidden>
+      <h2>本次战果</h2>
+      <div class="gacha-result-grid" id="resultGrid"></div>
+      <div class="gacha-result-foot">
+        <button type="button" id="flipAll">全部翻开</button>
+        <button type="button" id="resultClose">收下</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>卡册</h2>
+      <p class="checkin-hint" id="collectionHint">未获得的卡显示为灰暗状态。</p>
+      <p class="checkin-hint">数据与卡面来自 <a href="https://wiki.biligame.com/kards" target="_blank" rel="noopener noreferrer">KARDS WIKI（biligame）</a>，仅收录该 wiki 收录的卡。</p>
+      <div class="kards-grid" id="collection"></div>
+    </section>
+
+    <section>
+      <h2>最近抽卡</h2>
+      <ul class="kards-log" id="history"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> Henrybeta</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="kards-cards.js"></script>
+  <script src="gacha.js"></script>
+</body>
+</html>

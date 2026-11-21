@@ -588,3 +588,502 @@ html.dark .exchange-title.fortune-flat  { color: #52c88c; }
 .auto-option:hover {
   opacity: 1;
 }
+/* ===== KARDS 抽卡 ===== */
+.gacha-stats { grid-template-columns: repeat(4, 1fr); }
+
+.gacha-line {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin: 8px 0 16px;
+}
+
+.gacha-line strong {
+  color: var(--accent);
+  font-size: 1.05rem;
+}
+
+.gacha-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.gacha-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  opacity: 1;
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.gacha-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.gacha-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gacha-btn-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.gacha-btn-cost {
+  font-size: 0.76rem;
+  opacity: 0.7;
+}
+
+.gacha-btn-elite { border-color: #d4a017; }
+.gacha-btn-elite .gacha-btn-title { color: #b8860b; }
+html.dark .gacha-btn-elite .gacha-btn-title { color: #f5c518; }
+
+/* ---- 卡牌 ---- */
+.kards-grid,
+.gacha-result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 14px;
+}
+
+.gacha-result-grid {
+  perspective: 1000px;
+  margin: 8px 0 16px;
+}
+
+.gacha-result[hidden] { display: none; }
+
+.kards-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--rc, #7b818c);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(165deg, #262b33 0%, #1b2026 55%, #14181c 100%);
+  color: #ece4cf;
+  text-align: left;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.rarity-common { --rc: #7b818c; }
+.rarity-uncommon { --rc: #4b7bb5; }
+.rarity-rare { --rc: #9a6bd8; }
+.rarity-elite { --rc: #d4a017; }
+
+.kards-card.rarity-elite {
+  box-shadow: 0 0 0 1px rgba(212, 160, 23, 0.35), 0 4px 18px rgba(212, 160, 23, 0.25);
+}
+
+.kards-card.rarity-elite::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 225, 150, 0.16) 48%, transparent 62%);
+  transform: translateX(-120%);
+  animation: kc-shine 4.5s ease-in-out infinite;
+}
+
+@keyframes kc-shine {
+  0%, 55% { transform: translateX(-120%); }
+  85%, 100% { transform: translateX(120%); }
+}
+
+.kc-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kc-cost {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #e0c68c, #b28f4f);
+  color: #251d10;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.kc-type {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  opacity: 0.72;
+}
+
+.kc-faction {
+  margin-left: auto;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--fc);
+  border: 1px solid currentColor;
+  padding: 0 5px;
+  border-radius: 3px;
+}
+
+.kc-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  border-radius: 6px;
+  color: var(--rc);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: radial-gradient(120% 90% at 50% 18%, rgba(255, 255, 255, 0.09), rgba(0, 0, 0, 0.35) 72%);
+}
+
+.kc-art svg {
+  width: 46%;
+  height: 46%;
+  opacity: 0.92;
+}
+
+.kc-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+.kc-text {
+  font-size: 0.68rem;
+  line-height: 1.45;
+  opacity: 0.66;
+  min-height: 2.9em;
+}
+
+.kc-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: auto;
+  font-family: ui-monospace, Consolas, Menlo, monospace;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.kc-atk { color: #e8b06a; }
+.kc-def { color: #93bde0; }
+
+.kc-atk::before { content: "攻 "; font-size: 0.6em; opacity: 0.6; }
+.kc-def::before { content: "防 "; font-size: 0.6em; opacity: 0.6; }
+
+.kc-kind {
+  margin-top: auto;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  color: var(--rc);
+  opacity: 0.9;
+}
+
+.kc-new,
+.kc-count {
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  line-height: 1.6;
+  padding: 0 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.kc-new {
+  background: #d4a017;
+  color: #1c1608;
+  font-weight: 800;
+}
+
+.kc-count {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.kards-card.locked {
+  opacity: 0.42;
+  filter: grayscale(0.85);
+}
+
+.kc-lock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 42%;
+  text-align: center;
+  font-size: 0.68rem;
+  letter-spacing: 0.3em;
+  padding: 3px 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.gacha-result-item {
+  position: relative;
+  perspective: 1000px;
+  cursor: pointer;
+  animation: kc-reveal 0.45s ease-out both;
+  outline: none;
+  border-radius: 12px;
+}
+
+.gacha-result-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+@keyframes kc-reveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* 3D 翻卡：正面在文档流里撑高，背面绝对定位覆盖 */
+.kc-flipper {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.2, 0.7, 0.25, 1);
+}
+
+.gacha-result-item.flipped .kc-flipper { transform: rotateY(180deg); }
+
+/* 精英卡的翻牌更慢，翻开后加一次金色脉冲 */
+.gacha-result-item[data-rarity="elite"].flipped .kc-flipper {
+  transition-duration: 1.5s;
+}
+
+.gacha-result-item[data-rarity="elite"].flipped {
+  animation: kc-elite-pulse 1.9s ease-out 0.7s 1;
+}
+
+@keyframes kc-elite-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0); }
+  35% { box-shadow: 0 0 26px 7px rgba(212, 160, 23, 0.45); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0); }
+}
+
+.gacha-rate {
+  font-size: 0.78rem;
+  opacity: 0.6;
+  margin: 10px 0 0;
+  letter-spacing: 0.02em;
+}
+
+.kc-side {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* 正面（卡片本体）在文档流里撑高，但初始朝向背面，翻转后才转正 */
+.kc-front {
+  transform: rotateY(180deg);
+}
+
+.kc-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(0deg);
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 160, 23, 0.5);
+  color: #d4a017;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 7px, transparent 7px 14px),
+    linear-gradient(150deg, #222a30 0%, #131920 60%, #0d1114 100%);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.kc-back-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  width: 100%;
+}
+
+.kc-back-mark svg {
+  width: 46%;
+  max-width: 72px;
+}
+
+.kc-back-word {
+  font-family: ui-monospace, Consolas, Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.42em;
+  color: #d8b45a;
+}
+
+.kc-back-hint {
+  font-size: 0.56rem;
+  letter-spacing: 0.18em;
+  color: rgba(236, 228, 207, 0.45);
+}
+
+.gacha-result-label {
+  text-align: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  margin-top: 6px;
+  color: var(--rc);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.3s ease 0.3s, transform 0.3s ease 0.3s;
+}
+
+.gacha-result-item.flipped .gacha-result-label {
+  opacity: 1;
+  transform: none;
+}
+
+.gacha-result-foot {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.gacha-btn-pack {
+  border-color: rgba(212, 160, 23, 0.65);
+}
+
+.gacha-btn-pack .gacha-btn-title {
+  color: #b8860b;
+}
+
+html.dark .gacha-btn-pack .gacha-btn-title {
+  color: #f5c518;
+}
+
+.gacha-result-foot button {
+  padding: 8px 32px;
+  border-radius: 999px;
+}
+
+/* ---- 抽卡记录 ---- */
+.kards-log {
+  list-style: none;
+  padding: 0;
+}
+
+.kards-log-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.kards-log-item:last-child { border-bottom: none; }
+
+.kards-log-time {
+  font-family: ui-monospace, Consolas, Menlo, monospace;
+  font-size: 0.76rem;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+.kards-log-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kards-rarity-tag {
+  font-size: 0.7rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.kards-rarity-tag.rarity-common { color: #8a8f98; }
+.kards-rarity-tag.rarity-uncommon { color: #4b7bb5; }
+.kards-rarity-tag.rarity-rare { color: #9a6bd8; }
+.kards-rarity-tag.rarity-elite { color: #b8860b; }
+
+html.dark .kards-rarity-tag.rarity-uncommon { color: #7aa8e0; }
+html.dark .kards-rarity-tag.rarity-rare { color: #b98cf0; }
+html.dark .kards-rarity-tag.rarity-elite { color: #f5c518; }
+
+/* ---- 官方卡面（wiki 直链图片） ---- */
+.kc-face {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.kc-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.kc-art-fallback {
+  aspect-ratio: 5 / 7;
+  display: grid;
+  place-items: center;
+  color: var(--rc);
+  background: radial-gradient(120% 90% at 50% 18%, rgba(255, 255, 255, 0.09), rgba(0, 0, 0, 0.35) 72%);
+}
+
+.kc-art-fallback svg {
+  width: 42%;
+  height: 42%;
+  opacity: 0.92;
+}
+
+.kc-cap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.kc-cap .kc-name {
+  font-size: 0.76rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kc-meta {
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  opacity: 0.62;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kards-card.rarity-elite::after,
+  .gacha-result-item { animation: none; }
+  .kc-flipper,
+  .gacha-result-label { transition: none; }
+}
+
+@media (max-width: 600px) {
+  .gacha-stats { grid-template-columns: repeat(2, 1fr); }
+  .gacha-actions { grid-template-columns: 1fr; }
+  .kards-grid,
+  .gacha-result-grid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+}
