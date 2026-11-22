@@ -862,12 +862,18 @@ html.dark .gacha-btn-elite .gacha-btn-title { color: #f5c518; }
 .gacha-result-item.flipped .kc-flipper { transform: rotateY(180deg); }
 
 /* 精英卡的翻牌更慢，翻开后加一次金色脉冲 */
-.gacha-result-item[data-rarity="elite"].flipped .kc-flipper {
-  transition-duration: 1.5s;
-}
+/* 稀有度越高翻得越慢：限定 1.4s / 特殊 1.6s / 精英 2s（标准仍是 0.65s） */
+.gacha-result-item[data-rarity="uncommon"].flipped .kc-flipper { transition-duration: 1.4s; }
+.gacha-result-item[data-rarity="rare"].flipped .kc-flipper { transition-duration: 1.6s; }
+.gacha-result-item[data-rarity="elite"].flipped .kc-flipper { transition-duration: 2s; }
+
+/* 稀有度标签等牌快转完再亮，避免翻到一半就出字 */
+.gacha-result-item[data-rarity="uncommon"].flipped .gacha-result-label { transition-delay: 0.9s; }
+.gacha-result-item[data-rarity="rare"].flipped .gacha-result-label { transition-delay: 1.0s; }
+.gacha-result-item[data-rarity="elite"].flipped .gacha-result-label { transition-delay: 1.3s; }
 
 .gacha-result-item[data-rarity="elite"].flipped {
-  animation: kc-elite-pulse 1.9s ease-out 0.7s 1;
+  animation: kc-elite-pulse 1.9s ease-out 2.05s 1;
 }
 
 @keyframes kc-elite-pulse {
@@ -1096,6 +1102,142 @@ html.dark .kards-rarity-tag.rarity-elite { color: #f5c518; }
   letter-spacing: 0.08em;
   opacity: 0.62;
   white-space: nowrap;
+}
+
+/* ---- 卡片检视（可拖动） ---- */
+.kc-inspect {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(240, 163, 60, 0.55);
+  background: rgba(12, 16, 19, 0.78);
+  color: #f0c98a;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.kc-inspect:hover {
+  background: rgba(240, 163, 60, 0.9);
+  color: #1b1408;
+}
+
+.inspect-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.inspect-layer[hidden] { display: none; }
+
+.inspect-layer [hidden] { display: none !important; }
+
+.inspect-card {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: min(320px, 78vw);
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--rc, rgba(212, 160, 23, 0.6));
+  background: linear-gradient(160deg, #232a31 0%, #131920 70%);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.inspect-card.dragging { cursor: grabbing; }
+
+.inspect-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.inspect-art-fallback {
+  aspect-ratio: 5 / 7;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--rc);
+  background: radial-gradient(120% 90% at 50% 18%, rgba(255, 255, 255, 0.09), rgba(0, 0, 0, 0.35) 72%);
+}
+
+.inspect-art-fallback svg {
+  width: 42%;
+  height: 42%;
+  opacity: 0.9;
+}
+
+.inspect-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 2px 2px;
+  color: #ece4cf;
+}
+
+.inspect-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspect-count {
+  font-size: 0.72rem;
+  opacity: 0.6;
+}
+
+.inspect-rarity {
+  font-size: 0.68rem;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  color: var(--rc);
+  white-space: nowrap;
+}
+
+.inspect-close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #1b2026;
+  color: #ece4cf;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.inspect-close:hover { background: #2a333b; }
+
+.inspect-hint {
+  text-align: center;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  opacity: 0.45;
+  color: #ece4cf;
+  padding-top: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

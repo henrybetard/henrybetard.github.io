@@ -61,10 +61,10 @@
   };
 
   var RARITY = {
-    common: { key: 'common', name: '标准', cls: 'rarity-common', rank: 0, weight: 700 },
-    uncommon: { key: 'uncommon', name: '限定', cls: 'rarity-uncommon', rank: 1, weight: 200 },
-    rare: { key: 'rare', name: '特殊', cls: 'rarity-rare', rank: 2, weight: 90 },
-    elite: { key: 'elite', name: '精英', cls: 'rarity-elite', rank: 3, weight: 10 }
+    common: { key: 'common', name: '标准', cls: 'rarity-common', rank: 0, weight: 900 },
+    uncommon: { key: 'uncommon', name: '限定', cls: 'rarity-uncommon', rank: 1, weight: 90 },
+    rare: { key: 'rare', name: '特殊', cls: 'rarity-rare', rank: 2, weight: 9 },
+    elite: { key: 'elite', name: '精英', cls: 'rarity-elite', rank: 3, weight: 1 }
   };
 
   // 卡池来自 KARDS WIKI 的卡牌列表（kards-cards.js），只收录该 wiki 有收录的卡
@@ -73,21 +73,24 @@
   var CARD_BY_ID = {};
   CARDS.forEach(function (c) { CARD_BY_ID[c.id] = c; });
 
-  // ---- 消耗与保底 ----
-  var COST_ONE = 10;          // 中平
-  var COST_FIVE = 40;         // 中平
-  var COST_PACK = 1;          // 中吉，卡包（5 张，限定起步）
-  var PITY_LIMIT = 20;        // 连续 20 抽必出特殊以上
+  // ---- 消耗与概率表 ----
+  var COST_ONE = 10;          // 中平，单抽
+  var COST_FIVE = 40;         // 中平，普通卡包
+  var COST_PACK = 1;          // 中吉，军官卡包
 
-  // 卡包的概率表：不出标准，特殊/精英大幅提高（55 / 35 / 10）
-  var PACK_WEIGHTS = { common: 0, uncommon: 550, rare: 350, elite: 100 };
+  var NORMAL_PACK_SIZE = 5;   // 普通卡包：5 张，必出 1 张限定以上
+  var OFFICER_PACK_SIZE = 7;  // 军官卡包：7 张，必出 1 张特殊 + 1 张限定
+
+  // 普通卡包：标准 90% · 限定 9% · 特殊 0.9% · 精英 0.1%
+  var NORMAL_PACK_WEIGHTS = { common: 900, uncommon: 90, rare: 9, elite: 1 };
+  // 军官卡包：标准 80% · 限定 15% · 特殊 4% · 精英 1%
+  var OFFICER_PACK_WEIGHTS = { common: 800, uncommon: 150, rare: 40, elite: 10 };
 
   // ---- 存储键（与打卡页共用运势经济） ----
   var KEY_RECORDS = 'checkin_records';
   var KEY_EXCHANGE = 'checkin_exchange';
   var KEY_COLLECTION = 'kards_cards';
   var KEY_HISTORY = 'kards_history';
-  var KEY_PITY = 'kards_pity';
   var KEY_GIFT = 'kards_gift';
 
   // ============================================================
@@ -99,8 +102,6 @@
   var gBig = document.getElementById('gBig');
   var collectedEl = document.getElementById('collected');
   var totalCardsEl = document.getElementById('totalCards');
-  var pityEl = document.getElementById('pityCount');
-  var pityLimitEl = document.getElementById('pityLimit');
   var hintEl = document.getElementById('gachaHint');
   var resultSection = document.getElementById('resultSection');
   var resultGrid = document.getElementById('resultGrid');
@@ -135,17 +136,6 @@
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
   }
 
-  function readNumber(key, fallback) {
-    try {
-      var raw = localStorage.getItem(key);
-      if (raw === null) return fallback;
-      var n = Number(JSON.parse(raw));
-      return isFinite(n) ? n : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  }
-
   function loadExchanges() {
     var def = { '大吉': 0, '中吉': 0, '小吉': 0, '中平': 0 };
     var data = readJSON(KEY_EXCHANGE, null);
@@ -163,9 +153,6 @@
   var collection = readJSON(KEY_COLLECTION, {});
   var storedHistory = readJSON(KEY_HISTORY, []);
   var history = Array.isArray(storedHistory) ? storedHistory : [];
-  var pity = readNumber(KEY_PITY, 0);
-  if (pity < 0) pity = 0;
-  if (pity > PITY_LIMIT) pity = 0;
 
   // ============================================================
   // 4. 运势钱包（与打卡页一致：抽到的 + 兑换净变化）
@@ -243,26 +230,22 @@
   }
 
   function drawOne(minRank, weights) {
-    var floor = Math.max(minRank || 0, pity >= PITY_LIMIT ? 2 : 0);
-    var rarity = pickRarity(floor, weights);
-    if (rarity.rank >= 2) pity = 0;
-    else pity += 1;
-    return pickCard(rarity.key);
+    return pickCard(pickRarity(minRank || 0, weights).key);
   }
 
   function drawMany(count, minRank, weights) {
     var out = [];
-    var gotHigh = false;
-    for (var i = 0; i < count; i++) {
-      var card = drawOne(minRank || 0, weights);
-      out.push(card);
-      if (RARITY[card.rarity].rank >= 2) gotHigh = true;
-    }
-    // 五连 / 军官卡包保底：整组没有特殊以上时，把最后一张提上来
-    if (count > 1 && !gotHigh) {
-      out[out.length - 1] = drawOne(2);
-    }
+    for (var i = 0; i < count; i++) out.push(drawOne(minRank || 0, weights));
     return out;
+  }
+
+  // 整组保证：没有 rank >= minRank 的卡时，把最后一张换成满足条件的抽取
+  function ensureAtLeast(cards, minRank, weights) {
+    var ok = cards.some(function (c) {
+      return (RARITY[c.rarity] || RARITY.common).rank >= minRank;
+    });
+    if (!ok && cards.length) cards[cards.length - 1] = drawOne(minRank, weights);
+    return cards;
   }
 
   // ============================================================
@@ -298,15 +281,136 @@
         ' loading="lazy" decoding="async" referrerpolicy="no-referrer">'
       : '<div class="kc-art-fallback">' + glyphSvg(card.type) + '</div>';
 
+    var inspectBtn = (opts.inspect && opts.owned)
+      ? '<button class="kc-inspect" type="button" data-inspect="' + esc(card.id) + '"' +
+        ' aria-label="检视 ' + esc(card.name) + '">检视</button>'
+      : '';
+
     return '<article class="' + classes + '" data-id="' + esc(card.id) + '">' +
       badge +
-      '<div class="kc-face">' + face + '</div>' +
+      '<div class="kc-face">' + face + inspectBtn + '</div>' +
       '<div class="kc-cap">' +
         '<span class="kc-name">' + esc(card.name) + '</span>' +
         '<span class="kc-meta">' + faction.code + ' · ' + type.name + '</span>' +
       '</div>' +
       (opts.owned ? '' : '<span class="kc-lock">未获得</span>') +
       '</article>';
+  }
+
+  // ---------------- 卡片检视（可自由拖动） ----------------
+  var inspectLayer = null, inspectCard = null, inspectImg = null;
+  var inspectName = null, inspectRarity = null, inspectCount = null, inspectFallback = null;
+  var drag = { active: false, dx: 0, dy: 0 };
+
+  function bigImageUrl(url) {
+    return String(url || '').replace('/120px-', '/400px-');
+  }
+
+  function moveInspectTo(x, y) {
+    if (!inspectCard) return;
+    var w = inspectCard.offsetWidth, h = inspectCard.offsetHeight;
+    var maxX = Math.max(8, window.innerWidth - w - 8);
+    var maxY = Math.max(8, window.innerHeight - h - 8);
+    inspectCard.style.left = Math.min(Math.max(8, x), maxX) + 'px';
+    inspectCard.style.top = Math.min(Math.max(8, y), maxY) + 'px';
+  }
+
+  function openInspect(id) {
+    var card = CARD_BY_ID[id];
+    if (!card || !(collection[id] > 0) || !inspectLayer) return;
+    var rarity = RARITY[card.rarity] || RARITY.common;
+
+    inspectCard.className = 'inspect-card ' + rarity.cls;
+    inspectName.textContent = card.name;
+    inspectRarity.textContent = rarity.name;
+    inspectRarity.className = 'inspect-rarity ' + rarity.cls;
+    inspectCount.textContent = '×' + (collection[id] || 1);
+
+    if (card.img) {
+      inspectFallback.hidden = true;
+      inspectImg.hidden = false;
+      inspectImg.src = bigImageUrl(card.img);
+    } else {
+      inspectImg.hidden = true;
+      inspectFallback.hidden = false;
+      inspectFallback.innerHTML = glyphSvg(card.type);
+    }
+
+    inspectLayer.hidden = false;
+    requestAnimationFrame(function () {
+      moveInspectTo((window.innerWidth - inspectCard.offsetWidth) / 2,
+                    (window.innerHeight - inspectCard.offsetHeight) / 2);
+    });
+  }
+
+  function closeInspect() {
+    drag.active = false;
+    if (inspectCard) inspectCard.classList.remove('dragging');
+    if (inspectLayer) inspectLayer.hidden = true;
+  }
+
+  function initInspect() {
+    inspectLayer = document.getElementById('inspectLayer');
+    if (!inspectLayer) return;
+    inspectCard = document.getElementById('inspectCard');
+    inspectImg = document.getElementById('inspectImg');
+    inspectName = document.getElementById('inspectName');
+    inspectRarity = document.getElementById('inspectRarity');
+    inspectCount = document.getElementById('inspectCount');
+    inspectFallback = document.getElementById('inspectFallback');
+
+    var closeBtn = document.getElementById('inspectClose');
+    if (closeBtn) closeBtn.addEventListener('click', closeInspect);
+
+    // 大图加载失败时退回 120px 缩略图
+    if (inspectImg) {
+      inspectImg.addEventListener('error', function () {
+        if (inspectImg.src.indexOf('400px-') !== -1) {
+          inspectImg.src = inspectImg.src.replace('400px-', '120px-');
+        } else {
+          inspectImg.hidden = true;
+        }
+      });
+    }
+
+    // 拖动：pointer 事件，鼠标/触屏通用；用 pointer capture 保证移出卡片也不断
+    inspectCard.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('.inspect-close')) return;
+      drag.active = true;
+      var r = inspectCard.getBoundingClientRect();
+      drag.dx = e.clientX - r.left;
+      drag.dy = e.clientY - r.top;
+      inspectCard.classList.add('dragging');
+      try {
+        if (inspectCard.setPointerCapture) inspectCard.setPointerCapture(e.pointerId);
+      } catch (err) { /* 合成事件没有真实 pointerId 时会抛错，忽略 */ }
+    });
+    inspectCard.addEventListener('pointermove', function (e) {
+      if (!drag.active) return;
+      e.preventDefault();
+      moveInspectTo(e.clientX - drag.dx, e.clientY - drag.dy);
+    });
+    function endDrag(e) {
+      if (!drag.active) return;
+      drag.active = false;
+      inspectCard.classList.remove('dragging');
+      try {
+        if (inspectCard.hasPointerCapture && inspectCard.hasPointerCapture(e.pointerId)) {
+          inspectCard.releasePointerCapture(e.pointerId);
+        }
+      } catch (err) { /* 同上 */ }
+    }
+    inspectCard.addEventListener('pointerup', endDrag);
+    inspectCard.addEventListener('pointercancel', endDrag);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeInspect();
+    });
+    window.addEventListener('resize', function () {
+      if (inspectLayer.hidden) return;
+      var r = inspectCard.getBoundingClientRect();
+      moveInspectTo(r.left, r.top);
+    });
   }
 
   function setHint(text) {
@@ -330,8 +434,6 @@
     var owned = CARDS.filter(function (c) { return (collection[c.id] || 0) > 0; }).length;
     if (collectedEl) collectedEl.textContent = owned;
     if (totalCardsEl) totalCardsEl.textContent = CARDS.length;
-    if (pityEl) pityEl.textContent = pity;
-    if (pityLimitEl) pityLimitEl.textContent = PITY_LIMIT;
   }
 
   function renderCollection() {
@@ -347,7 +449,7 @@
     } else {
       collectionEl.innerHTML = list.map(function (c) {
         var count = collection[c.id] || 0;
-        return cardHtml(c, { owned: count > 0, count: count });
+        return cardHtml(c, { owned: count > 0, count: count, inspect: true });
       }).join('');
     }
 
@@ -455,7 +557,6 @@
     history = history.slice(0, 40);
     writeJSON(KEY_COLLECTION, collection);
     writeJSON(KEY_HISTORY, history);
-    writeJSON(KEY_PITY, pity);
   }
 
   function summarize(cards) {
@@ -475,17 +576,22 @@
 
     if (kind === 'one') {
       if (!spend('中平', COST_ONE)) { renderWallet(); return; }
-      cards = drawMany(1, 0);
+      // 单抽：与普通卡包同一张概率表（90 : 9 : 0.9 : 0.1），没有保底
+      cards = drawMany(1, 0, NORMAL_PACK_WEIGHTS);
     } else if (kind === 'five') {
       if (!spend('中平', COST_FIVE)) { renderWallet(); return; }
-      cards = drawMany(5, 0);
+      // 普通卡包：5 张，按 90:9:0.9:0.1 抽，必出 1 张限定（或更高）
+      cards = ensureAtLeast(
+        drawMany(NORMAL_PACK_SIZE, 0, NORMAL_PACK_WEIGHTS), 1, NORMAL_PACK_WEIGHTS);
     } else if (kind === 'pack') {
       if (!spend('中吉', COST_PACK)) { renderWallet(); return; }
-      cards = drawMany(5, 1, PACK_WEIGHTS);
+      // 军官卡包：7 张，按 80:15:4:1 抽，必出 1 张特殊 + 1 张限定
+      cards = ensureAtLeast(
+        ensureAtLeast(drawMany(OFFICER_PACK_SIZE, 0, OFFICER_PACK_WEIGHTS), 2, OFFICER_PACK_WEIGHTS),
+        1, OFFICER_PACK_WEIGHTS);
     } else {
       if (!spend('大吉', 1)) { renderWallet(); return; }
       cards = drawMany(1, 3);
-      pity = 0;
     }
 
     var newFlags = {};
@@ -498,9 +604,8 @@
     renderHistory();
     renderResults(cards, newFlags);
 
-    var prefix = kind === 'pack' ? '卡包：' : '本次获得：';
-    setHint(prefix + summarize(cards) + '（点击卡背翻开）' +
-      (pity >= PITY_LIMIT ? ' · 下一抽必出特殊以上' : ''));
+    var prefix = kind === 'pack' ? '军官卡包：' : (kind === 'five' ? '普通卡包：' : '本次获得：');
+    setHint(prefix + summarize(cards) + '（点击卡背翻开）');
   }
 
   if (drawOneBtn) drawOneBtn.addEventListener('click', function () { runDraw('one'); });
@@ -509,6 +614,15 @@
   if (drawEliteBtn) drawEliteBtn.addEventListener('click', function () { runDraw('elite'); });
   if (flipAllBtn) flipAllBtn.addEventListener('click', flipAll);
   if (showLockedEl) showLockedEl.addEventListener('change', function () { renderCollection(); });
+
+  if (collectionEl) {
+    collectionEl.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('button[data-inspect]') : null;
+      if (!btn) return;
+      e.stopPropagation();
+      openInspect(btn.getAttribute('data-inspect'));
+    });
+  }
 
   if (resultClose) {
     resultClose.addEventListener('click', function () {
@@ -520,6 +634,7 @@
   // 8. 启动
   // ============================================================
   if (giftGiven) setHint('已发放新手补给：中平 ×20，先抽两发试试手气。');
+  initInspect();
   renderWallet();
   renderProgress();
   renderCollection();

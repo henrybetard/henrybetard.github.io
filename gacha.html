@@ -49,7 +49,6 @@
 
       <p class="gacha-line">
         已收集 <strong id="collected">0</strong> / <span id="totalCards">0</span>
-        · 保底进度 <strong id="pityCount">0</strong> / <span id="pityLimit">20</span>
       </p>
 
       <div class="gacha-actions">
@@ -58,12 +57,12 @@
           <span class="gacha-btn-cost">中平 × 10</span>
         </button>
         <button class="gacha-btn" type="button" id="drawFive">
-          <span class="gacha-btn-title">五连</span>
-          <span class="gacha-btn-cost">中平 × 40</span>
+          <span class="gacha-btn-title">普通卡包</span>
+          <span class="gacha-btn-cost">中平 × 40 · 5 张</span>
         </button>
         <button class="gacha-btn gacha-btn-pack" type="button" id="drawPack">
-          <span class="gacha-btn-title">卡包</span>
-          <span class="gacha-btn-cost">中吉 × 1 · 5 张</span>
+          <span class="gacha-btn-title">军官卡包</span>
+          <span class="gacha-btn-cost">中吉 × 1 · 7 张</span>
         </button>
         <button class="gacha-btn gacha-btn-elite" type="button" id="drawElite">
           <span class="gacha-btn-title">精英征召</span>
@@ -71,7 +70,7 @@
         </button>
       </div>
 
-      <p class="gacha-rate">概率：标准 70% · 限定 20% · 特殊 9% · 精英 1%；卡包不出标准，必出特殊以上。</p>
+      <p class="gacha-rate">稀有度：标准 / 限定 / 特殊 / 精英 ｜ 单抽 90:9:0.9:0.1 ｜ 普通卡包 90:9:0.9:0.1（5 张，必出 1 张限定）｜ 军官卡包 80:15:4:1（7 张，必出 1 张特殊 + 1 张限定）。</p>
       <p class="checkin-hint" id="gachaHint" aria-live="polite">点一下开包，限定以上会有专属边框。</p>
     </section>
 
@@ -97,6 +96,20 @@
       <ul class="kards-log" id="history"></ul>
     </section>
   </main>
+
+  <div class="inspect-layer" id="inspectLayer" hidden>
+    <div class="inspect-card" id="inspectCard" role="dialog" aria-label="卡牌检视">
+      <button class="inspect-close" id="inspectClose" type="button" aria-label="关闭检视">×</button>
+      <img class="inspect-img" id="inspectImg" alt="" draggable="false">
+      <div class="inspect-art-fallback" id="inspectFallback" hidden></div>
+      <div class="inspect-meta">
+        <span class="inspect-name" id="inspectName"></span>
+        <span class="inspect-count" id="inspectCount"></span>
+        <span class="inspect-rarity" id="inspectRarity"></span>
+      </div>
+      <div class="inspect-hint">拖动卡面可随意挪动 · Esc 关闭</div>
+    </div>
+  </div>
 
   <footer>
     <p>© <span id="year"></span> Henrybeta</p>
