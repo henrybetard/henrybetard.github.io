@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第七区 · 平叛行动 · Henrybeta</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var dark = saved
+          ? saved === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <h1><a href="index.html">Henrybeta</a></h1>
+    <p><a href="index.html">← 返回首页</a> · <a href="gacha.html">去抽卡</a></p>
+    <button id="themeBtn" type="button">切换深色</button>
+  </header>
+
+  <main>
+    <section class="ops-brief">
+      <h2>第七区 · 平叛行动</h2>
+      <p class="checkin-hint">地图可选第七区（12 区）或郊区（20 区、人口全为 1）。驻军免费、可跨区域调度，但要按赶路时间抵达（本区即时）；等级上限靠「驻军训练」解锁（初始 Lv1，最高 Lv4）。基建/安保需到场建设，同区一次只能施工一个。</p>
+
+      <div class="checkin-stats ops-stats">
+        <div class="stat">
+          <span class="stat-value" id="opsBudget">0</span>
+          <span class="stat-label">资金 <small id="opsIncome">+0/秒</small></span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="opsRep">100</span>
+          <span class="stat-label">声望</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="opsStable">0/7</span>
+          <span class="stat-label">已稳定区域</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="opsTime">0s</span>
+          <span class="stat-label">行动时长</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="opsCorrupt">0</span>
+          <span class="stat-label">腐败度</span>
+        </div>
+      </div>
+
+      <div class="ops-threat">
+        <span class="threat-name" id="threatLabel">叛乱威胁</span>
+        <div class="threat-track"><div class="threat-fill" id="threatFill"></div></div>
+        <b id="threatNum">0%</b>
+      </div>
+      <p class="ops-meta" id="opsMeta">驻军区 0/0</p>
+
+      <div class="ops-controls">
+        <button id="opsPause" type="button">暂停</button>
+        <button id="opsSpeed" type="button">×1</button>
+        <button id="opsRestart" type="button">重新开始</button>
+      </div>
+
+      <div class="ops-diff" id="opsDiff">
+        <span>难度</span>
+        <button type="button" data-diff="easy">简单</button>
+        <button type="button" data-diff="normal">普通</button>
+        <button type="button" data-diff="hard">困难</button>
+      </div>
+      <div class="ops-diff" id="opsMapPick">
+        <span>地图</span>
+        <button type="button" data-map="core">第七区</button>
+        <button type="button" data-map="suburb">郊区</button>
+        <button type="button" id="opsNetToggle" class="net-toggle">联机</button>
+      </div>
+
+      <div class="ops-net hidden" id="opsNet">
+        <div class="ops-net-row">
+          <span>模式</span>
+          <button type="button" data-mode="coop" class="on">合作</button>
+          <button type="button" data-mode="versus">对抗</button>
+        </div>
+        <div class="ops-net-row">
+          <button type="button" id="netCreate">创建房间</button>
+          <input id="netCode" maxlength="5" placeholder="房间码" autocomplete="off" />
+          <button type="button" id="netJoin">加入</button>
+          <button type="button" id="netLeave" class="hidden">断开</button>
+        </div>
+        <div class="ops-net-row">
+          <span>服务器</span>
+          <input id="netUrl" class="net-url" autocomplete="off" />
+        </div>
+        <p class="ops-net-status" id="netStatus">未连接 · 先运行 node sector-server.js，默认连当前地址</p>
+      </div>
+      <p class="checkin-hint" id="opsHint">只有中州有视野：叛军会占据地块、提高当地叛乱，被压制时会逃向未稳定区域。地图上的 ! 就是叛军位置。</p>
+    </section>
+
+    <section class="ops-map-card">
+      <h2>战区地图</h2>
+      <div class="ops-map-wrap">
+        <svg id="opsMap" viewBox="0 0 600 400" role="img" aria-label="第七区战区地图"></svg>
+      </div>
+      <div class="ops-legend">
+        <span><i class="lg lg-stable"></i>稳定</span>
+        <span><i class="lg lg-unrest"></i>叛乱</span>
+        <span><i class="lg lg-lost"></i>失守</span>
+        <span><i class="lg lg-garrison"></i>驻军</span>
+      </div>
+    </section>
+
+    <section id="zonePanel" class="zone-panel">
+      <h2 id="zoneName">区域</h2>
+      <p class="checkin-hint" id="zoneMeta"></p>
+      <div class="zone-bars" id="zoneBars">
+        <div class="zone-bar">
+          <span>稳定</span>
+          <div class="zone-track"><div class="zone-fill zone-fill-s" id="zoneStab"></div></div>
+          <b id="zoneStabNum">0</b>
+        </div>
+        <div class="zone-bar">
+          <span>叛乱</span>
+          <div class="zone-track"><div class="zone-fill zone-fill-i" id="zoneIns"></div></div>
+          <b id="zoneInsNum">0</b>
+        </div>
+      </div>
+      <div class="zone-actions">
+        <button class="zone-act zone-act-wide hidden" type="button" id="actUnlock">
+          <span class="za-name">解锁情报</span><span class="za-desc">解锁后可见局势并采取行动</span><span class="za-cost">20</span>
+        </button>
+        <button class="zone-act zone-act-wide hidden" type="button" id="actTravel">
+          <span class="za-name">确认前往</span><span class="za-desc">点这里才会出发，赶路期间无法行动</span><span class="za-cost">3.6s</span>
+        </button>
+        <button class="zone-act" type="button" id="actGarrison">
+          <span class="za-name">派驻驻军</span><span class="za-desc">免费 · 可跨区域远程调度</span><span class="za-cost">免费</span>
+        </button>
+        <button class="zone-act" type="button" id="actInfra">
+          <span class="za-name">基建</span><span class="za-desc">本地稳定 +0.30/秒</span><span class="za-cost">20</span>
+        </button>
+        <button class="zone-act" type="button" id="actSecurity">
+          <span class="za-name">加强安保</span><span class="za-desc">极低速清理本地叛军</span><span class="za-cost">22</span>
+        </button>
+
+      </div>
+      <button class="garrison-exit hidden" type="button" id="garrisonExit">撤出驻军</button>
+      <p class="zone-rebel hidden" id="zoneRebel"></p>
+      <p class="checkin-hint" id="zoneHint"></p>
+    </section>
+
+    <section class="ops-initiatives">
+      <h2>建设项目</h2>
+      <div class="init-grid" id="initGrid"></div>
+    </section>
+
+    <section class="ops-log-card">
+      <h2>行动日志</h2>
+      <ul class="ops-log" id="opsLog"></ul>
+    </section>
+  </main>
+
+  <div class="ops-toasts" id="opsToasts" aria-live="polite"></div>
+
+  <div class="ops-event" id="opsEvent" hidden>
+    <div class="ops-event-box">
+      <h2 id="eventTitle">事件</h2>
+      <p id="eventText"></p>
+      <div class="ops-event-options" id="eventOptions"></div>
+      <p class="checkin-hint">处理事件时行动暂停</p>
+    </div>
+  </div>
+
+  <div class="ops-result" id="opsResult" hidden>
+    <div class="ops-result-box">
+      <h2 id="resultTitle">行动结束</h2>
+      <p id="resultText"></p>
+      <div class="ops-result-stats" id="resultStats"></div>
+      <button id="resultRestart" type="button">再来一次</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>© <span id="year"></span> Henrybeta</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="sector-core.js"></script>
+  <script src="sector-net.js"></script>
+  <script src="sector.js"></script>
+</body>
+</html>
