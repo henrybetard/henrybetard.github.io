@@ -163,7 +163,7 @@
     deployCost: 0,
     upgradeCost: [0, 0, 0, 0, 0],
     insCut: [0, 4.0, 6.0, 8.0, 10.0],
-    stabPenalty: [0, 0.5, 0.8, 1.2, 1.5]
+    stabPenalty: [0, 0.5, 0.5, 0.5, 0.5]   // 稳定惩罚与等级无关，固定 0.5/秒
   };
   var LOST_DRAIN = { threshold: 2, rate: 0.18 };
 
@@ -700,9 +700,11 @@
     if (allUnlocked && s.zones.every(function (z) { return z.stable; }) && s.rebels.length === 0) {
       s.status = 'won';
       pushLog(s, '全部区域稳定，行动成功！', 'good');
-    } else if (s.reputation <= 0 || zoneOf(s, 'mid').lost) {
+    } else if (s.reputation <= 0 || (zoneOf(s, s.current) && zoneOf(s, s.current).lost)) {
       s.status = 'lost';
-      pushLog(s, zoneOf(s, 'mid').lost ? '中州失守，行动失败' : '声望耗尽，行动失败', 'bad');
+      pushLog(s, (zoneOf(s, s.current) && zoneOf(s, s.current).lost)
+        ? '指挥官所在区域（' + regionOf(s.current).name + '）沦陷，行动失败'
+        : '声望耗尽，行动失败', 'bad');
     }
     return events;
   }
@@ -722,12 +724,22 @@
     return { ok: true, text: '出发前往 ' + regionOf(id).name + '，约 ' + t.toFixed(1) + ' 秒' };
   }
 
+  function canUnlock(s, id) {
+    var z = zoneOf(s, id);
+    if (!z || z.unlocked) return false;
+    return neighborsOf(id).some(function (nid) {
+      var n = zoneOf(s, nid);
+      return n && n.unlocked;
+    });
+  }
+
   function unlockZone(s, id) {
     if (s.status !== 'playing') return { ok: false, reason: '行动已结束' };
     if (s.pending.length) return { ok: false, reason: '请先处理当前事件' };
     var z = zoneOf(s, id);
     if (!z) return { ok: false, reason: '区域不存在' };
     if (z.unlocked) return { ok: false, reason: '已经解锁' };
+    if (!canUnlock(s, id)) return { ok: false, reason: '只能解锁与已解锁区域相邻的地块' };
     var cost = unlockCost(s, id);
     if (s.budget < cost) return { ok: false, reason: '资金不足（需要 ' + cost + '）' };
     s.budget -= cost;
@@ -862,6 +874,7 @@
     selectZone: selectZone,
     unlockZone: unlockZone,
     unlockCost: unlockCost,
+    canUnlock: canUnlock,
     canActIn: canActIn,
     buyInitiative: buyInitiative,
     initiativeCost: initiativeCost,

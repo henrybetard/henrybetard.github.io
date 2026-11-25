@@ -27,7 +27,7 @@
   <main>
     <section class="ops-brief">
       <h2>第七区 · 平叛行动</h2>
-      <p class="checkin-hint">地图可选第七区（12 区）或郊区（20 区、人口全为 1）。驻军免费、可跨区域调度，但要按赶路时间抵达（本区即时）；等级上限靠「驻军训练」解锁（初始 Lv1，最高 Lv4）。基建/安保需到场建设，同区一次只能施工一个。</p>
+      <p class="checkin-hint">地图可选第七区（12 区）或郊区（20 区、人口全为 1）。失败条件：声望归零，或指挥官所在区域沦陷。点「帮助」看完整规则。</p>
 
       <div class="checkin-stats ops-stats">
         <div class="stat">
@@ -76,6 +76,7 @@
         <button type="button" data-map="core">第七区</button>
         <button type="button" data-map="suburb">郊区</button>
         <button type="button" id="opsNetToggle" class="net-toggle">联机</button>
+        <button type="button" id="opsHelpToggle" class="help-toggle">帮助</button>
       </div>
 
       <div class="ops-net hidden" id="opsNet">
@@ -162,6 +163,35 @@
   </main>
 
   <div class="ops-toasts" id="opsToasts" aria-live="polite"></div>
+
+  <div class="ops-help" id="opsHelp" hidden>
+    <div class="ops-help-box">
+      <h2>玩法帮助</h2>
+      <div class="ops-help-body">
+        <h3>目标</h3>
+        <p>让所有已解锁区域进入「稳定」：稳定 ≥ 82、叛乱 ≤ 15，且区内没有叛军。未解锁区域不要求。</p>
+        <h3>失败条件</h3>
+        <p><b>声望归零</b>，或<b>指挥官所在区域沦陷</b>（你当前停留的地块被叛军占领）。指挥官在地图上有「当前区域」标记，别把自己送到失守区。</p>
+        <h3>资源</h3>
+        <p>资金每 3 秒结算一次；声望用于衡量局势，宣传署可以缓慢回复；腐败会让所有项目和扩展开销上涨。</p>
+        <h3>行动</h3>
+        <p>点地图只选中，**确认前往**后才会赶路；赶路时间随距离、山地和公路等级变化。<br>
+        解锁视野只能解锁与已解锁区域相邻的地块。<br>
+        驻军免费、可跨区域下达，但按赶路时间抵达（本区即时），调遣中占编制；等级上限初始 Lv1，靠全局项目「驻军训练」升到 Lv4。<br>
+        驻军对叛军伤害随等级提升（10/20/30/40 每秒），但对稳定的压制固定 −0.5/秒，靠「军政署」转正。<br>
+        基建/安保是本地项目，需到场建设，同一区域一次只能施工一个：基建加稳定，安保以极低速度清剿叛军。</p>
+        <h3>叛军</h3>
+        <p>叛军占住地块会持续抬高叛乱；等级越高越难打，低等级驻军打不动高等级叛军。被打垮时会突围，连续突围两次后组织崩溃才会被围歼。失守区里的叛军会主动进攻相邻地块。叛军数量不设上限。</p>
+        <h3>事件</h3>
+        <p>出现失守区后才会触发事件；事件会居中弹窗并暂停游戏，选项各有取舍。</p>
+        <h3>全局项目</h3>
+        <p>公路（赶路更快）、后勤（资金收入）、宣传署（缓慢回声望）、驻军训练（驻军等级上限）、军备（驻军区数量）、军政署（驻军稳定转正）、审计署（压腐败）。</p>
+        <h3>联机</h3>
+        <p>合作：房主跑模拟，双方共同操作。对抗：各自经营，先达成目标者胜。需要先在本机或服务器运行 <code>node sector-server.js</code>。</p>
+      </div>
+      <button type="button" id="opsHelpClose">知道了</button>
+    </div>
+  </div>
 
   <div class="ops-event" id="opsEvent" hidden>
     <div class="ops-event-box">

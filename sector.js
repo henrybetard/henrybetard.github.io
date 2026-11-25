@@ -14,7 +14,7 @@
 
   var el = {};
   ['opsBudget', 'opsIncome', 'opsRep', 'opsStable', 'opsTime', 'opsCorrupt', 'threatFill', 'threatNum', 'threatLabel',
-    'opsHint', 'opsMeta', 'opsNetToggle', 'opsNet', 'netUrl', 'netCreate', 'netJoin', 'netLeave', 'netCode', 'netStatus', 'opsMap', 'opsPause', 'opsSpeed', 'opsRestart', 'opsDiff', 'zoneName', 'zoneMeta', 'zoneBars',
+    'opsHint', 'opsMeta', 'opsNetToggle', 'opsHelpToggle', 'opsHelp', 'opsHelpClose', 'opsNet', 'netUrl', 'netCreate', 'netJoin', 'netLeave', 'netCode', 'netStatus', 'opsMap', 'opsPause', 'opsSpeed', 'opsRestart', 'opsDiff', 'zoneName', 'zoneMeta', 'zoneBars',
     'zoneStab', 'zoneIns', 'zoneStabNum', 'zoneInsNum', 'actGarrison', 'actInfra', 'actSecurity', 'opsMapPick', 'actUnlock', 'actTravel',
     'garrisonExit', 'zoneHint', 'zoneRebel', 'initGrid', 'opsLog', 'opsToasts', 'opsEvent', 'eventTitle', 'eventText',
     'eventOptions', 'opsResult', 'resultTitle', 'resultText', 'resultStats', 'resultRestart'
@@ -319,9 +319,16 @@
     hide(el.garrisonExit, !(z.garrison > 0 || z.garrisonIncoming));
     if (locked) {
       var cost = C.unlockCost(state, z.id);
-      el.zoneMeta.textContent = '没有情报视野：花费 ' + cost + ' 资金解锁才能看到局势。未解锁区域不会冻结，叛军仍在蔓延。';
-      el.actUnlock.disabled = state.budget < cost;
-      el.actUnlock.querySelector('.za-cost').textContent = state.budget < cost ? '资金不足' : String(cost);
+      var can = C.canUnlock(state, z.id);
+      if (!can) {
+        el.zoneMeta.textContent = '没有情报视野：该地块不与已解锁区域相邻，需要先解锁相邻地块。';
+        el.actUnlock.disabled = true;
+        el.actUnlock.querySelector('.za-cost').textContent = '不相邻';
+      } else {
+        el.zoneMeta.textContent = '没有情报视野：花费 ' + cost + ' 资金解锁才能看到局势。未解锁区域不会冻结，叛军仍在蔓延。';
+        el.actUnlock.disabled = state.budget < cost;
+        el.actUnlock.querySelector('.za-cost').textContent = state.budget < cost ? '资金不足' : String(cost);
+      }
       hide(el.actTravel, true);
       hide(el.zoneRebel, true);
       return;
@@ -676,12 +683,13 @@
 
   function showResult() {
     var won = state.status === 'won';
-    var midLost = C.zoneOf(state, 'mid').lost;
+    var cmdZone = C.zoneOf(state, state.current);
+    var midLost = !!(cmdZone && cmdZone.lost);
     el.resultTitle.textContent = won ? '行动成功' : '行动失败';
     el.resultText.textContent = won
       ? '全部区域恢复稳定，行动成功。'
       : peerWon ? '对手先完成了目标，你输了这场对抗。'
-      : midLost ? '中州失守，指挥体系崩溃，行动失败。' : '声望耗尽，行动被迫中止。';
+      : midLost ? '指挥官所在区域沦陷，行动失败。' : '声望耗尽，行动被迫中止。';
     el.resultStats.innerHTML =
       '<span>难度 <b>' + C.DIFFICULTY[state.difficulty].name + '</b></span>' +
       '<span>用时 <b>' + state.time + 's</b></span>' +
@@ -772,6 +780,17 @@
   });
 
   el.resultRestart.addEventListener('click', function () { restart(); });
+
+  el.opsHelpToggle.addEventListener('click', function () {
+    el.opsHelp.hidden = !el.opsHelp.hidden;
+  });
+  el.opsHelpClose.addEventListener('click', function () { el.opsHelp.hidden = true; });
+  el.opsHelp.addEventListener('click', function (e) {
+    if (e.target === el.opsHelp) el.opsHelp.hidden = true;
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !el.opsHelp.hidden) el.opsHelp.hidden = true;
+  });
 
   initNet();
   buildMap();
